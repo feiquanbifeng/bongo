@@ -6,14 +6,39 @@ package bongo
 
 import (
     "net/http"
+    "reflect"
     "strconv"
     "time"
 
     "github.com/codegangsta/inject"
+    "github.com/gorilla/mux"
 )
 
 // Define type interface accept different route
 type Handler interface{}
+
+func validateHandler(handler Handler) {
+    if reflect.TypeOf(handler).Kind() != reflect.Func {
+        panic("bongo handler must be a callable func")
+    }
+}
+
+// Define Bongo struct
+type Bongo struct {
+    inject.Injector
+    handler *mux.Router
+    log     *Logger
+    config  map[string]interface{}
+}
+
+// New a bongo application
+func NewBongo() *Bongo {
+    b := &Bongo{
+        Injector: inject.New(),
+        log:      NewLogger(),
+    }
+    return b
+}
 
 // Application include Bongo instance and router information
 type Application struct {
@@ -29,21 +54,6 @@ func App() *Application {
     return &Application{b, r}
 }
 
-type Bongo struct {
-    inject.Injector
-    port   string
-    log    *Logger
-    config map[string]interface{}
-}
-
-func NewBongo() *Bongo {
-    b := &Bongo{
-        Injector: inject.New(),
-        log:      newLogger(),
-    }
-    return b
-}
-
 // Run the server
 // If port is provider use it
 func (b *Bongo) Run(port int) error {
@@ -53,10 +63,9 @@ func (b *Bongo) Run(port int) error {
     } else {
         addr = ":" + strconv.Itoa(port)
     }
-    b.port = addr
     chErrors := make(chan error, 1)
     go func() {
-        chErrors <- b.listen()
+        chErrors <- b.listen(addr)
     }()
 
     err := <-chErrors
@@ -72,13 +81,14 @@ func Route(route string, fn func()) error {
     return nil
 }
 
-// start the app
-func (b *Bongo) listen() error {
+// Start the app
+func (b *Bongo) listen(port string) error {
     server := http.Server{
-        Addr:        b.port,
+        Addr:        port,
         Handler:     b.handler,
         ReadTimeout: 5 * time.Second,
     }
+    b.log.Info("listen on %s (%s)\n", port, "dev")
     return server.ListenAndServe()
 }
 
@@ -88,18 +98,10 @@ func (b *Bongo) Get(key string) interface{} {
 }
 
 // Set the value for config variable or with pair
-func (b *Bongo) Set(key string, values ...interface{}) {
+// If have the same value the before value will be over
+func (b *Bongo) Set(key string, value interface{}) {
     if b.config == nil {
         b.config = make(map[string]interface{})
     }
-
-    if len(values) == 0 {
-        return b.settings[settings]
-    } else {
-        // get the first value
-        for _, v := range args {
-            b.settings[settings] = v
-            break
-        }
-    }
+    b.config[key] = value
 }

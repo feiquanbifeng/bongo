@@ -5,27 +5,27 @@
 package main
 
 import (
-	"bongo"
-	"log"
-	"os"
+    "bongo"
+    "log"
+    "os"
 
-	"mvc/routes"
+    "mvc/controllers/index"
 )
 
 func main() {
-	app := bongo.NewBongo()
-	dirname, err := os.Getwd()
+    app := bongo.NewBongo()
+    dirname, err := os.Getwd()
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	app.Set("views", dirname+"\\views")
+    if err != nil {
+        log.Fatal(err)
+    }
+    app.Set("views", dirname+"\\views")
 
-	// serve static files
-	// app.Use(bongo.Static(dirname + "/public"));
+    // serve static files
+    // app.Use(bongo.Static(dirname + "/public"));
 
-	// Register routes
-	app.Route("/", routes.Init)
-	// Run the app
-	app.Run(":3000")
+    // Register routes
+    app.Get("/", index.FindById)
+    // Run the app
+    app.Run(":3000")
 }

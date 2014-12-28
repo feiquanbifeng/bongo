@@ -20,6 +20,5 @@ const (
 type Response struct {
     Status      int
     ContentType string
-
-    Out http.ResponseWriter
+    Out         http.ResponseWriter
 }

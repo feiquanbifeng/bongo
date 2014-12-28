@@ -5,16 +5,17 @@
 package index
 
 import (
-	"io"
-	"net/http"
+    "io"
+    "net/http"
+
+    "bongo"
 )
 
-func Index(w http.ResponseWriter, r *http.Request) error {
-	io.WriteString(w, "Hello World!")
-	return nil
+type MainController struct {
+    bongo.Controller
 }
 
-func Hello(w http.ResponseWriter, r *http.Request) error {
-	io.WriteString(w, "Nothing")
-	return nil
+func (m *MainController) FindById(id int) {
+    m.Data["json"] = `{"Name": "Hello"}`
+    m.ServeJSON()
 }

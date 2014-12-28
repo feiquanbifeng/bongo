@@ -14,20 +14,9 @@ import (
     "github.com/gorilla/mux"
 )
 
-var RR *Routes
-
-func init() {
-    RR = &Routes{
-        Controller: make(map[string]ControllerInterface),
-        R:          mux.NewRouter(),
-    }
-}
-
-type HttpApiFunc func(args ...interface{}) error
-
 type Router interface {
-    Get(string, HttpApiFunc)
-    Post(string, HttpApiFunc)
+    Get(string, Handler)
+    Post(string, Handler)
 }
 
 type Routes struct {
@@ -36,7 +25,7 @@ type Routes struct {
     R          *mux.Router
 }
 
-func newRouter(r string, fn func(...interface{}) error) *Routes {
+func NewRouter(r string, fn func(...interface{}) error) *Router {
     RR.path = r
     fn()
     return RR
