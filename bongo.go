@@ -26,8 +26,8 @@ func validateHandler(handler Handler) {
 // Define Bongo struct
 type Bongo struct {
     inject.Injector
+    *Logger
     handler *mux.Router
-    log     *Logger
     config  map[string]interface{}
 }
 
@@ -35,7 +35,7 @@ type Bongo struct {
 func NewBongo() *Bongo {
     b := &Bongo{
         Injector: inject.New(),
-        log:      NewLogger(),
+        Logger:   NewLogger(),
     }
     return b
 }
@@ -88,7 +88,7 @@ func (b *Bongo) listen(port string) error {
         Handler:     b.handler,
         ReadTimeout: 5 * time.Second,
     }
-    b.log.Info("listen on %s (%s)\n", port, "dev")
+    b.Info("listen on %s (%s)\n", port, "dev")
     return server.ListenAndServe()
 }
 
