@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-    app := bongo.NewBongo()
+    app := bongo.App()
     dirname, err := os.Getwd()
 
     if err != nil {
@@ -24,8 +24,9 @@ func main() {
     // serve static files
     // app.Use(bongo.Static(dirname + "/public"));
 
+    mc := &index.MainController{}
     // Register routes
-    app.Get("/", index.FindById)
+    app.Get("/", mc.FindById)
     // Run the app
-    app.Run(":3000")
+    app.Run(3000)
 }
