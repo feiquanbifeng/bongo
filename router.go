@@ -14,25 +14,26 @@ import (
     "github.com/gorilla/mux"
 )
 
+// Router registers Routes to be matched and dispatches a handler.
+// This will send all incoming requests to the router.
 type Router interface {
     Get(string, Handler)
     Post(string, Handler)
 }
 
-type Routes struct {
+// NewRouter returns a new router instance.
+func NewRouter() Router {
+
+}
+
+type Route struct {
     path       string
     Controller map[string]ControllerInterface
     R          *mux.Router
 }
 
-func NewRouter(r string, fn func(...interface{}) error) *Router {
-    RR.path = r
-    fn()
-    return RR
-}
-
 // Wrap http handler
-func makeHttpHandler(path string, localMethod string, localRoute string, handlerFunc HttpApiFunc) http.HandlerFunc {
+func makeHttpHandler(path string, localMethod string, localRoute string, handlerFunc Handler) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         // log the request
         context := &context.Context{
@@ -49,22 +50,22 @@ func makeHttpHandler(path string, localMethod string, localRoute string, handler
 }
 
 // Create route func for private
-func (r *Routes) createRoute(m string, route string, h HttpApiFunc) {
+func (r *Route) createRoute(m string, route string, h Handler) {
     f := makeHttpHandler(r.path, m, route, h)
     r.R.Path(path.Clean(r.path + route)).Methods(m).HandlerFunc(f)
 }
 
 // Get request
-func (r *Routes) Get(route string, h HttpApiFunc) {
+func (r *Route) Get(route string, h Handler) {
     r.createRoute("GET", route, h)
 }
 
 // Post request
-func (r *Routes) Post(route string, h HttpApiFunc) {
+func (r *Route) Post(route string, h Handler) {
     r.createRoute("POST", route, h)
 }
 
-func (r *Routes) RegisterController(c ControllerInterface) error {
+func (r *Route) RegisterController(c ControllerInterface) error {
     RR.Controller[r.path] = c
     return nil
 }
