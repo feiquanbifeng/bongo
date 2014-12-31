@@ -4,13 +4,11 @@
 
 package routes
 
-import (
-	"bongo/router"
-	"mvc/controllers/index"
-)
+import ()
 
-func Init() {
-	var r = router.Routes
-	r.Get("/home", index.index)
-	r.Post("/abc", index.hello)
+var routes = bongo.NewRouter()
+
+func init() {
+    mc := &index.MainController{}
+    routes.Get("/home", mc.FindById)
 }
