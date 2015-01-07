@@ -6,6 +6,7 @@ package bongo
 
 import (
     "net/http"
+    "path"
     "reflect"
     "strconv"
     "time"
@@ -87,7 +88,20 @@ func (b *Bongo) Run(port int) error {
 // ServeHTTP is the HTTP Entry point for a Bongo instance.
 // Useful if you want to control your own HTTP server.
 func (b *Bongo) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+    // Clean path to canonical form and redirect.
+    if p := cleanPath(req.URL.Path); p != req.URL.Path {
 
+        // Added 3 lines (Philip Schlump) - It was droping the query string and #whatever from query.
+        // This matches with fix in go 1.2 r.c. 4 for same problem.  Go Issue:
+        // http://code.google.com/p/go/issues/detail?id=5252
+        url := *req.URL
+        url.Path = p
+        p = url.String()
+
+        w.Header().Set("Location", p)
+        w.WriteHeader(http.StatusMovedPermanently)
+        return
+    }
 }
 
 // Start the app
@@ -121,4 +135,22 @@ func (b *Bongo) Set(key string, value interface{}) {
 func (b *Bongo) Use(handler Handler) {
     validateHandler(handler)
     b.handlers = append(b.handlers, handler)
+}
+
+// cleanPath returns the canonical path for p, eliminating . and .. elements.
+// Borrowed from the net/http package.
+func cleanPath(p string) string {
+    if p == "" {
+        return "/"
+    }
+    if p[0] != '/' {
+        p = "/" + p
+    }
+    np := path.Clean(p)
+    // path.Clean removes trailing slash except for root;
+    // put the trailing slash back if necessary.
+    if p[len(p)-1] == '/' && np != "/" {
+        np += "/"
+    }
+    return np
 }
