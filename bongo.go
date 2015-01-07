@@ -28,7 +28,8 @@ func validateHandler(handler Handler) {
 type Bongo struct {
     inject.Injector
     *Logger
-    config map[string]interface{}
+    handlers []Handler
+    config   map[string]interface{}
 }
 
 // New a Bongo application
@@ -112,4 +113,12 @@ func (b *Bongo) Set(key string, value interface{}) {
         b.config = make(map[string]interface{})
     }
     b.config[key] = value
+}
+
+// Use adds a middleware Handler to the stack.
+// Will panic if the handler is not a callable func.
+// Middleware Handlers are invoked in the order that they are added.
+func (b *Bongo) Use(handler Handler) {
+    validateHandler(handler)
+    b.handlers = append(b.handlers, handler)
 }
