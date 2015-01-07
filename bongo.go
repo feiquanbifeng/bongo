@@ -87,7 +87,7 @@ func (b *Bongo) Run(port int) error {
 
 // ServeHTTP is the HTTP Entry point for a Bongo instance.
 // Useful if you want to control your own HTTP server.
-func (b *Bongo) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (b *Bongo) ServeHTTP(w http.ResponseWriter, req *http.Request) {
     // Clean path to canonical form and redirect.
     if p := cleanPath(req.URL.Path); p != req.URL.Path {
 
